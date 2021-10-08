@@ -24,6 +24,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "pixi.js": "^5.3.3"
+    "pixi.js": "^5.3.3",
+    "planck-js": "^0.3.31"
   }
 }
