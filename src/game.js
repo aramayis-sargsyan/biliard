@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { getCircleCordinate } from './utils';
+import { getCircleCordinate, getHolesCordinate } from './gameConfig';
 
 export class Game extends PIXI.Application {
   constructor() {
@@ -13,32 +13,6 @@ export class Game extends PIXI.Application {
       x: 0,
       y: 0,
     };
-    this.bilHole = [
-      {
-        x: 0,
-        y: 0,
-      },
-      {
-        x: this.renderer.width / 2 - 20,
-        y: 0,
-      },
-      {
-        x: this.renderer.width - 40,
-        y: 0,
-      },
-      {
-        x: 0,
-        y: this.renderer.height - 40,
-      },
-      {
-        x: this.renderer.width / 2 - 20,
-        y: this.renderer.height - 40,
-      },
-      {
-        x: this.renderer.width - 40,
-        y: this.renderer.height - 40,
-      },
-    ];
 
     this.mouseEnd = {
       x: 0,
@@ -55,6 +29,7 @@ export class Game extends PIXI.Application {
   }
 
   _onLoadComplete() {
+    this._drawHoles();
     this._drawGraphics();
     this._createCircle();
     this._createCircles();
@@ -80,6 +55,24 @@ export class Game extends PIXI.Application {
         x: 0,
         y: 0,
       };
+    }
+  }
+
+  _drawHoles() {
+    this.holes = [];
+    for (let i = 0; i < getHolesCordinate().length; i++) {
+      const graphic = new PIXI.Graphics();
+      graphic.lineStyle(5, 0x222222);
+      graphic.beginFill(0x333333);
+      if (getHolesCordinate()[i].x === 0.5) {
+        graphic.drawCircle(0, 0, 32);
+      } else graphic.drawCircle(0, 0, 45);
+      graphic.closePath();
+      graphic.endFill();
+      this.holes.push(graphic);
+      this.holes[i].position.x = getHolesCordinate()[i].x * this.renderer.width;
+      this.holes[i].position.y = getHolesCordinate()[i].y * this.renderer.height;
+      this.stage.addChild(this.holes[i]);
     }
   }
 
@@ -118,25 +111,20 @@ export class Game extends PIXI.Application {
   }
 
   _deleteCircle(circle, index) {
-    for (let i = 0; i < this.bilHole.length - 1; i++) {
-      if (
-        circle.position.x <= this.bilHole[i].x + 40 &&
-        circle.position.x >= this.bilHole[i].x &&
-        circle.position.y <= this.bilHole[i].y + 40 &&
-        circle.position.y >= this.bilHole[i].y
-      ) {
-        this._deleteCircleArr(index);
-        circle.destroy();
-        break;
-      }
+    if (index === 0) {
+      let cordinateX = prompt('x - ', (this.renderer.width * 1) / 4);
+      this.circles[index].position.x = (this.renderer.width * 1) / 4;
+      let cordinateY = prompt('y - ', this.renderer.height / 2);
+      this.circles[index].position.y = this.renderer.height / 2;
+      this.circles[index].velocity = {
+        x: 0,
+        y: 0,
+      };
+      console.log(7);
+    } else {
+      this.circles.splice(index, 1);
+      circle.destroy();
     }
-  }
-
-  _deleteCircleArr(index) {
-    console.log(this.circles.length);
-    this.circles.splice(index, 1);
-
-    console.log(this.circles.length);
   }
 
   _checkCollision(circle1, circle2) {
@@ -147,6 +135,13 @@ export class Game extends PIXI.Application {
 
   _checkCirclesCollision() {
     for (let i = 0; i < this.circles.length; i++) {
+      for (let k = 0; k < 6; k++) {
+        let holeDistance = this._checkCollision(this.circles[i], this.holes[k]);
+        if (this.holes[k].width / 2 >= holeDistance) {
+          this._deleteCircle(this.circles[i], i);
+          return;
+        }
+      }
       this._checkWorldBounds(this.circles[i]);
       for (let j = i + 1; j < this.circles.length; j++) {
         const distance = this._checkCollision(this.circles[i], this.circles[j]);
@@ -154,7 +149,6 @@ export class Game extends PIXI.Application {
           this._resolveCollision(this.circles[i], this.circles[j]);
         }
       }
-      this._deleteCircle(this.circles[i], i);
     }
   }
 
@@ -185,7 +179,7 @@ export class Game extends PIXI.Application {
     pathLine.moveTo(this.mouseStart.x, this.mouseStart.y);
     pathLine.lineTo(this.mouseEnd.x, this.mouseEnd.y);
     this.pathLine = pathLine;
-    this.stage.addChild(this.pathLine);
+    this.stage.addChildAt(this.pathLine, 0);
   }
 
   _drawArrow() {
@@ -198,7 +192,7 @@ export class Game extends PIXI.Application {
     );
 
     this.pathLineArrow = pathLine;
-    this.stage.addChild(this.pathLineArrow);
+    this.stage.addChildAt(this.pathLineArrow, 0);
   }
 
   _calculateVelocity() {

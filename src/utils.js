@@ -6,26 +6,6 @@ export const getRandomColor = () => {
   return '0x' + Math.floor(Math.random() * 16777215).toString(16);
 };
 
-export const getCircleCordinate = (x, y) => {
-  let firstX = x;
-  let firstY = y;
-  let counter = 0;
-  const arr = [];
-  for (let i = 5; i > 0; i--) {
-    firstY;
-    for (let j = i; j > 0; j--) {
-      arr.push({ x: 0, y: 0 });
-      arr[counter].x = firstX;
-      arr[counter].y = firstY;
-      counter++;
-      firstY -= 60;
-    }
-    firstX -= 52;
-    firstY += 60 * i - 30;
-  }
-  return arr;
-};
-
 // export const getDelateCordinate = () => {
 //   bilHole = {
 //     holeLT: {
